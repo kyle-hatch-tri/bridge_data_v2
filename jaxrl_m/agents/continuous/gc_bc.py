@@ -39,6 +39,39 @@ class GCBCAgent(flax.struct.PyTreeNode):
             actor_loss = -(log_probs).mean()
             actor_std = dist.stddev().mean(axis=1)
 
+            # print("batch[\"observations\"][\"image\"].shape:", batch["observations"]["image"].shape)
+            # print("batch[\"goals\"][\"image\"].shape:", batch["goals"]["image"].shape)
+            # print("batch[\"actions\"].shape:", batch["actions"].shape)
+            # print("pi_actions.shape:", pi_actions.shape)
+            # print("mse.shape:", mse.shape)
+            # print("dist.mean().shape:", dist.mean().shape)
+            # print("log_probs.shape:", log_probs.shape)
+            # print("actor_loss.shape:", actor_loss.shape)
+            """
+            batch["observations"]["image"].shape: (24, 1, 200, 200, 3)
+            batch["actions"].shape: (24, 7)
+            batch["observations"]["image"].shape: (24, 1, 200, 200, 3)
+            batch["goals"]["image"].shape: (24, 200, 200, 3)
+            batch["actions"].shape: (24, 7)
+            pi_actions.shape: (24, 7)
+            mse.shape: (24,)
+            dist.mean().shape: (24, 7)
+            log_probs.shape: (24,)
+            actor_loss.shape: ()
+
+            batch["observations"]["image"].shape: (24, 200, 200, 3)
+            batch["actions"].shape: (24, 7)
+            batch["observations"]["image"].shape: (24, 200, 200, 3)
+            batch["goals"]["image"].shape: (24, 200, 200, 3)
+            batch["actions"].shape: (24, 7)
+            pi_actions.shape: (24, 7)
+            mse.shape: (24,)
+            dist.mean().shape: (24, 7)
+            log_probs.shape: (24,)
+            actor_loss.shape: ()
+            """
+
+
             return (
                 actor_loss,
                 {

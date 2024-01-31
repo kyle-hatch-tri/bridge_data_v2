@@ -11,13 +11,18 @@
 
 import numpy as np
 import tensorflow as tf 
-from tqdm import tqdm 
+from tqdm import tqdm, trange
 import os
 from multiprocessing import Pool
 
 ########## Dataset paths ###########
-raw_dataset_path = "<path_to_unzipped_raw_CALVIN_dataset>"
-tfrecord_dataset_path = "<desired_destination_path_of_processed_dataset>"
+# raw_dataset_path = "<path_to_unzipped_raw_CALVIN_dataset>"
+# tfrecord_dataset_path = "<desired_destination_path_of_processed_dataset>"
+
+raw_dataset_path = "/home/kylehatch/Desktop/hidql/data/calvin_data/task_ABCD_D"
+tfrecord_dataset_path = "/home/kylehatch/Desktop/hidql/data/calvin_data_processed/goal_conditioned"
+
+print("raw_dataset_path:", raw_dataset_path)
 
 ########## Main logic ###########
 if not os.path.exists(tfrecord_dataset_path):
@@ -59,7 +64,9 @@ def process_trajectory(function_data):
     # Namely "rel_actions", "robot_obs", and "rgb_static"
     traj_rel_actions, traj_robot_obs, traj_rgb_static = [], [], []
 
-    for ep_id in range(start_id, end_id+1): # end_id is inclusive
+    print("Start...")
+
+    for ep_id in trange(start_id, end_id+1): # end_id is inclusive
         #print(unique_pid + ": iter " + str(ep_id-start_id) + " of " + str(end_id-start_id))
 
         ep_id = make_seven_characters(ep_id)
@@ -73,16 +80,20 @@ def process_trajectory(function_data):
 
         rgb_static = timestep_data["rgb_static"] # not normalized, so we have to do normalization in another script
         traj_rgb_static.append(rgb_static)
-    
+
+    print("Converting to numpy array...")
     traj_rel_actions, traj_robot_obs, traj_rgb_static = np.array(traj_rel_actions, dtype=np.float32), np.array(traj_robot_obs, dtype=np.float32), np.array(traj_rgb_static, dtype=np.uint8)
+    print("Done converting to numpy array...")
 
     # Determine the output path
     write_dir = os.path.join(tfrecord_dataset_path, split, letter, "traj" + str(ctr))
     if not os.path.exists(write_dir):
         os.mkdir(write_dir)
 
+    print("Splitting...")
+
     # Split the trajectory into 1000 timestep length segments
-    for traj_idx in range(0, len(traj_rel_actions), 1000):
+    for traj_idx in trange(0, len(traj_rel_actions), 1000):
         traj_rel_actions_segment = traj_rel_actions[traj_idx : min(traj_idx+1000, len(traj_rel_actions))]
         traj_robot_obs_segment = traj_robot_obs[traj_idx : min(traj_idx+1000, len(traj_robot_obs))]
         traj_rgb_static_segment = traj_rgb_static[traj_idx : min(traj_idx+1000, len(traj_rgb_static))]
@@ -100,6 +111,7 @@ def process_trajectory(function_data):
                 )
             )
             writer.write(example.SerializeToString())
+    print("Done")
 
 # Let's prepare the inputs to the process_trajectory function and then parallelize execution
 function_inputs = []
@@ -140,7 +152,9 @@ for idx_range in ep_start_end_ids:
     function_inputs.append((idx_range, "D", ctr, "validation"))
     ctr += 1
 
-with Pool(len(function_inputs)) as p: # We have one process per input because we are io bound, not cpu bound
-    p.map(process_trajectory, function_inputs)
-#for function_input in tqdm(function_inputs):  # If you want to process the dataset in a serialized fashion
-#    process_trajectory(function_input)
+
+# with Pool(len(function_inputs)) as p: # We have one process per input because we are io bound, not cpu bound
+#     p.map(process_trajectory, function_inputs)
+for idx, function_input in tqdm(enumerate(function_inputs)):  # If you want to process the dataset in a serialized fashion
+   print(f"\n\nProcessing trajectory {idx + 1}/{len(function_inputs)}...")
+   process_trajectory(function_input)

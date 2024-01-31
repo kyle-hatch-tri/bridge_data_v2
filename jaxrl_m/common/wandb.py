@@ -68,13 +68,16 @@ class WandBLogger(object):
             id=self.config.experiment_id,
             save_code=True,
             mode=mode,
+
+            group=self.config.exp_descriptor, ###===###
+            name=f"seed_{self.config.seed}", ###---###
         )
 
         flag_dict = {k: getattr(flags.FLAGS, k) for k in flags.FLAGS}
         for k in flag_dict:
             if isinstance(flag_dict[k], ml_collections.ConfigDict):
                 flag_dict[k] = flag_dict[k].to_dict()
-        wandb.config.update(flag_dict)
+        wandb.config.update(flag_dict, allow_val_change=True) ###===### ###---###
 
     def log(self, data: dict, step: int = None):
         data_flat = _recursive_flatten_dict(data)

@@ -13,8 +13,11 @@ import os
 from multiprocessing import Pool
 
 ########## Dataset paths ###########
-raw_dataset_path = "<path_to_unzipped_CALVIN_dataset>"
-tfrecord_dataset_path = "<desired_dest_path_of_processed_dataset>"
+raw_dataset_path = "/home/kylehatch/Desktop/hidql/susie/data/calvin_data/task_ABCD_D"
+tfrecord_dataset_path = "/home/kylehatch/Desktop/hidql/susie/data/calvin_data_processed"
+
+
+print("raw_dataset_path:", raw_dataset_path)
 
 ########## Main logic ###########
 if not os.path.exists(tfrecord_dataset_path):
@@ -141,8 +144,12 @@ for i, idx_range in enumerate(idx_ranges):
     function_inputs.append((idx_range, "D", ctr, "validation", all_language_annotations[i]))
     ctr += 1
 
+
+print("Before process")
+print("len(function_inputs):", len(function_inputs))
 # Finally loop through and process everything
 for function_input in tqdm(function_inputs):
     process_trajectory(function_input)
+print("After process")
 
 # You can also parallelize execution with a process pool, see end of sister script

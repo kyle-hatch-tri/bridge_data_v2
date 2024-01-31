@@ -129,16 +129,25 @@ def geometric(traj, *, reached_proportion, discount):
         logits=tf.math.log(probs), num_samples=1, dtype=tf.int32
     )[:, 0]
 
+    # traj["traj_len"] = tf.ones_like(goal_idxs) * traj_len
+    # traj["goal_idxs1"] = goal_idxs
+
     # select a random proportion of transitions to relabel with the next observation
     goal_reached_mask = tf.random.uniform([traj_len]) < reached_proportion
+
+    # traj["goal_reached_mask1"] = goal_reached_mask
 
     # the last transition must be goal-reaching
     goal_reached_mask = tf.logical_or(
         goal_reached_mask, tf.range(traj_len) == traj_len - 1
     )
 
+    # traj["goal_reached_mask2"] = goal_reached_mask
+
     # make goal-reaching transitions have an offset of 0
     goal_idxs = tf.where(goal_reached_mask, tf.range(traj_len), goal_idxs)
+
+    # traj["goal_idxs2"] = goal_idxs
 
     # select goals
     traj["goals"] = tf.nest.map_structure(
