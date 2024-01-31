@@ -14,6 +14,19 @@ def get_config(config_string):
         resume_path=None,
         seed=42,
     )
+
+    # base_real_config_b2048 = base_real_config.copy()
+    # base_real_config_b2048["batch_size"] = 2048
+
+    # base_real_config_b4096 = base_real_config.copy()
+    # base_real_config_b4096["batch_size"] = 4096
+
+    # base_real_config_b8192 = base_real_config.copy()
+    # base_real_config_b8192["batch_size"] = 8192
+
+
+    
+
     
 
     base_data_config = dict(
@@ -241,6 +254,15 @@ def get_config(config_string):
     }
 
 
+    # base_real_config_b2048 = base_real_config.copy()
+    # base_real_config_b2048["batch_size"] = 2048
+
+    # base_real_config_b4096 = base_real_config.copy()
+    # base_real_config_b4096["batch_size"] = 4096
+
+    # base_real_config_b8192 = base_real_config.copy()
+    # base_real_config_b8192["batch_size"] = 8192
+
     local_keys = list(possible_structures.keys())
     for batch_size in [1024, 2048, 4096, 8192]:
         for key in local_keys:
@@ -253,6 +275,8 @@ def get_config(config_string):
         possible_structures[key + "_sagemaker"] = deepcopy(possible_structures[key])
         possible_structures[key + "_sagemaker"]["save_dir"] = "/opt/ml/code/results"
         possible_structures[key + "_sagemaker"]["data_path"] = "/opt/ml/input/data/calvin_data_processed"
+
+    print("possible_structures:", possible_structures)
 
     return possible_structures[config_string]
 
