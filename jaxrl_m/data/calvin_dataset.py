@@ -95,6 +95,7 @@ class CalvinDataset:
         obs_horizon: Optional[int] = None,
         load_language: bool = False,
         skip_unlabeled: bool = False,
+        normalize_actions: bool = True, ###===### ###---###
         **kwargs,
     ):
         logging.warning("Extra kwargs passed to CalvinDataset: %s", kwargs)
@@ -118,6 +119,7 @@ class CalvinDataset:
         self.obs_horizon = obs_horizon
         self.is_train = train
         self.load_language = load_language
+        self.normalize_actions = normalize_actions ###===### ###---###
 
         if self.load_language:
             self.PROTO_TYPE_SPEC["language_annotation"] = tf.string
@@ -182,7 +184,11 @@ class CalvinDataset:
         dataset = dataset.map(self._decode_example, num_parallel_calls=tf.data.AUTOTUNE)
 
         # yields trajectories
-        dataset = dataset.map(self._process_actions, num_parallel_calls=tf.data.AUTOTUNE)
+        if self.normalize_actions:
+            print("Normalizing actions")
+            dataset = dataset.map(self._process_actions, num_parallel_calls=tf.data.AUTOTUNE)
+        else:
+            print("Not normalizing actions")
 
         # yields trajectories
         dataset = dataset.map(self._chunk_act_obs, num_parallel_calls=tf.data.AUTOTUNE)

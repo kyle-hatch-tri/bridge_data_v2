@@ -7,26 +7,13 @@ def get_config(config_string):
         num_val_batches=8,
         num_steps=int(2e6),
         log_interval=1000,
-        eval_interval=2000,
-        save_interval=2000,
+        eval_interval=10_000,
+        save_interval=10_000,
         save_dir="/home/kylehatch/Desktop/hidql/bridge_data_v2/results",
         data_path="/home/kylehatch/Desktop/hidql/data/calvin_data_processed/goal_conditioned",
         resume_path=None,
         seed=42,
     )
-
-    # base_real_config_b2048 = base_real_config.copy()
-    # base_real_config_b2048["batch_size"] = 2048
-
-    # base_real_config_b4096 = base_real_config.copy()
-    # base_real_config_b4096["batch_size"] = 4096
-
-    # base_real_config_b8192 = base_real_config.copy()
-    # base_real_config_b8192["batch_size"] = 8192
-
-
-    
-
     
 
     base_data_config = dict(
@@ -48,6 +35,7 @@ def get_config(config_string):
                 "random_hue",
             ],
         ),
+        normalize_actions=True, 
     )
 
     # params that need to be specified multiple places
@@ -254,14 +242,11 @@ def get_config(config_string):
     }
 
 
-    # base_real_config_b2048 = base_real_config.copy()
-    # base_real_config_b2048["batch_size"] = 2048
+    local_keys = list(possible_structures.keys())
+    for key in local_keys:
+        possible_structures[key + "_noactnorm"] = deepcopy(possible_structures[key])
+        possible_structures[key + "_noactnorm"]["dataset_kwargs"]["normalize_actions"] = False
 
-    # base_real_config_b4096 = base_real_config.copy()
-    # base_real_config_b4096["batch_size"] = 4096
-
-    # base_real_config_b8192 = base_real_config.copy()
-    # base_real_config_b8192["batch_size"] = 8192
 
     local_keys = list(possible_structures.keys())
     for batch_size in [1024, 2048, 4096, 8192]:
@@ -275,8 +260,6 @@ def get_config(config_string):
         possible_structures[key + "_sagemaker"] = deepcopy(possible_structures[key])
         possible_structures[key + "_sagemaker"]["save_dir"] = "/opt/ml/code/results"
         possible_structures[key + "_sagemaker"]["data_path"] = "/opt/ml/input/data/calvin_data_processed"
-
-    print("possible_structures:", possible_structures)
 
     return possible_structures[config_string]
 

@@ -260,29 +260,4 @@ if __name__ == "__main__":
 
 """
 
-double check geometric sampling h params 
-double check iql h params (expectile, temperature)
-    - run w both hiql settings 
-
-Run through susie eval script 
-
-Try stable contrastive RL
-
-
-python main.py --p_currgoal 0.2 
---p_trajgoal 0.5
---p_randomgoal 0.3
---discount 0.99 
---temperature 1 
----pretrain_expectile 0.7 
---use_layer_norm 1 
---value_hidden_dim 512 
---value_num_layers 3 
---batch_size 1024 
---use_rep 0 
---policy_train_rep 0 
---algo_name iql 
---use_waypoints 0 
---way_steps 1 
---high_p_randomgoal 0.3
 """

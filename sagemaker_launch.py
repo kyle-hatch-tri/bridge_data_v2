@@ -79,11 +79,6 @@ def launch(args):
 
 
     subnets = [
-        # 'subnet-07bf42d7c9cb929e4',
-        # 'subnet-0f72615fd9bd3c717', 
-        # 'subnet-0a29e4f1a47443e28', 
-        # 'subnet-06e0db77592be2b36',
-
         'subnet-05f1115c7d6ccbd07',
         'subnet-03c7c7be28e923670',
         'subnet-0a29e4f1a47443e28',
@@ -100,15 +95,6 @@ def launch(args):
         'subnet-07bf42d7c9cb929e4',
         'subnet-0f72615fd9bd3c717',
         'subnet-0578590f6bd9a5dde',
-        # 'subnet-03550978b510a6d55',
-        # 'subnet-0449e12487555a62a',
-        # 'subnet-0a930733cdb95ffc9',
-        # 'subnet-07d4dd2bc160d9df6',
-        # 'subnet-016ef5d3e0df2ab9d',
-        # 'subnet-0a2097ea05c20b45e',
-        # 'subnet-0310cca5c76f96899',
-        # 'subnet-05a638cfbfae73305',
-        # 'subnet-03853f6eef9dbd13f',
     ]
 
 
@@ -365,7 +351,7 @@ python3 -u sagemaker_launch.py \
 --name gcbc_diffusion \
 --wandb_proj_name susie_gc_low_level \
 --wandb-api-key 65915e3ae3752bc3ddc4b7eef1b066067b9d1cb1 \
---instance_type ml.p4de.24xlarge
+--instance_type ml.p4d.24xlarge
 
 
 
@@ -376,12 +362,40 @@ python3 -u sagemaker_launch.py \
 --user kylehatch \
 --input-source s3 \
 --base-job-name bridge_data_v2 \
---config experiments/susie/calvin/configs/gcbc_train_config.py:gc_ddpm_bc_b2048_sagemaker \
+--config experiments/susie/calvin/configs/gcbc_train_config.py:gc_ddpm_bc_noactnorm_sagemaker \
 --calvin_dataset_config experiments/susie/calvin/configs/gcbc_data_config.py:all \
---name gcbc_diffusionb \
+--name gcbc_diffusion_noactnorm \
 --wandb_proj_name susie_gc_low_level \
 --wandb-api-key 65915e3ae3752bc3ddc4b7eef1b066067b9d1cb1 \
---instance_type ml.p4de.24xlarge
+--instance_type ml.p4d.24xlarge
+
+
+python3 -u sagemaker_launch.py \
+--entry_point calvin_gcbc.py \
+--user kylehatch \
+--input-source s3 \
+--base-job-name bridge_data_v2 \
+--config experiments/susie/calvin/configs/gcbc_train_config.py:gc_ddpm_bc_noactnorm_b2048_sagemaker \
+--calvin_dataset_config experiments/susie/calvin/configs/gcbc_data_config.py:all \
+--name gcbc_diffusion_noactnorm_b2048 \
+--wandb_proj_name susie_gc_low_level \
+--wandb-api-key 65915e3ae3752bc3ddc4b7eef1b066067b9d1cb1 \
+--instance_type ml.p4d.24xlarge
+
+python3 -u sagemaker_launch.py \
+--entry_point calvin_gcbc.py \
+--user kylehatch \
+--input-source s3 \
+--base-job-name bridge_data_v2 \
+--config experiments/susie/calvin/configs/gcbc_train_config.py:gc_ddpm_bc_noactnorm_b4096_sagemaker \
+--calvin_dataset_config experiments/susie/calvin/configs/gcbc_data_config.py:all \
+--name gcbc_diffusion_noactnorm_b4096 \
+--wandb_proj_name susie_gc_low_level \
+--wandb-api-key 65915e3ae3752bc3ddc4b7eef1b066067b9d1cb1 \
+--instance_type ml.p4d.24xlarge
+
+
+
 
 
 python3 -u sagemaker_launch.py \

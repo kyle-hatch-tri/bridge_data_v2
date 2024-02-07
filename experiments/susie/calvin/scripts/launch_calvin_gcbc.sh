@@ -56,15 +56,18 @@ cd "/home/kylehatch/Desktop/hidql/bridge_data_v2"
 #     --s3_save_uri=s3://kyle-sagemaker-training-outputs \
 #     --wandb_proj_name susie_gc_low_level"
 
-NAME="gciql2_policy"
+export WANDB_API_KEY=""
+
+cd /home/kylehatch/Desktop/hidql/bridge_data_v2
+NAME="gcbc_diffusion_policy_noactnorm"
 CMD="python3 -u calvin_gcbc.py \
-    --config experiments/susie/calvin/configs/gcbc_train_config.py:gc_iql2 \
+    --config experiments/susie/calvin/configs/gcbc_train_config.py:gc_ddpm_bc_noactnorm \
     --calvin_dataset_config experiments/susie/calvin/configs/gcbc_data_config.py:all \
     --name $NAME \
     --debug=1 \
-    --log_to_wandb=1 \
+    --log_to_wandb=0 \
     --save_to_s3=0 \
     --s3_save_uri=s3://kyle-sagemaker-training-outputs \
     --wandb_proj_name susie_gc_low_level"
-
 $CMD
+
