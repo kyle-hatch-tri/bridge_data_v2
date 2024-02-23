@@ -58,17 +58,17 @@ with tf.device('gpu:0'):
 print("=" * 70 + "\n")
 
 
-# print("\n\n" + "=" * 30 + " Pytorch GPU TEST " + "=" * 30)
+print("\n\n" + "=" * 30 + " Pytorch GPU TEST " + "=" * 30)
 
-# import torch
+import torch
 
-# print("torch.__version__:", torch.__version__)
-# print("torch.cuda.is_available():", torch.cuda.is_available())
+print("torch.__version__:", torch.__version__)
+print("torch.cuda.is_available():", torch.cuda.is_available())
 
-# x = torch.rand(5).cuda()
-# y = torch.ones_like(x).cuda()
-# print("x:", x)
-# print("y:", y)
-# print("x + y:", x + y)
+x = torch.rand(5).cuda()
+y = torch.ones_like(x).cuda()
+print("x:", x)
+print("y:", y)
+print("x + y:", x + y)
 
-# print("=" * 70 + "\n")
+print("=" * 70 + "\n")

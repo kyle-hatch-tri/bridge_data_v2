@@ -370,34 +370,69 @@ python3 -u sagemaker_launch.py \
 --instance_type ml.p4d.24xlarge
 
 
+### HEre ###
+export AWS_ACCESS_KEY_ID="ASIARZ3C2ZCO5B5IKJ6U"
+export AWS_SECRET_ACCESS_KEY="4/tY6CQYt5Putd0+5D7hNu+r2s53SaR+RvE6XeCG"
+export AWS_SESSION_TOKEN="IQoJb3JpZ2luX2VjEL3//////////wEaCXVzLWVhc3QtMSJGMEQCIHdQC7SVK3/bGeBb07TDdx95btb9Cyc5Od+MjW973mg3AiA/1zSKNyTgwRTZU/UkGaigUwZVXMjlD8Mb/sC5WOGZaiqSAwiW//////////8BEAQaDDEyNDIyNDQ1Njg2MSIM8NpBfhVv9DZqDBG7KuYCBiDcvX9fWVwHMCnN2U4YBpDKLNrP7FpseXoCz6+XFnt3BYQpKwV0Jrs4+rujVqumbYdKZu5d/CvG2QlC+Zij0TjWjnKWsskRMInH5b+PjZ8t4P5tYlkj0S0QFjXT8jftXmJ/ZXQpz7WPQYPP2efCS/jGxSOasU0/eUGoBTFP9JV5mbbqxtwCrPEWiBgh9UJnYY/oIyumBiQmtMEFmPUOHI/P2W5QcanGfrwe2qWsig6I2OthxZfbg8SqZGT0+mwMAGozGrvAY+jhaIsxL8F9lwCqnrfYUXSnZBS/cEumPHoyN5y63tsgF+GcF2jg46o9LefxvUZFo7yX655QT2lTKg9SO7/GkYuoOZYYdti3/VChJ4bNshIwenGQaKafOamk8yyi2pgbb21HuImptww1oHj+f5XiIBXPpd8u6iOh18IKU7RHlHZP5A3+0kocZCXjCg4YNYhc5bzJxPSSZ/SVx6yq8/cSPTCL1bSuBjqnAd69msZVjJy4b6RRTqcYKEEweN2VX7kbtcehccfuhW60VOcoA3w8qEr4iqil+5vJMFFHbOonjbYilnXdXhGbAxH4ZSJKJyIJHQLUgCKgCbxuuXwaOWLvNSR9lo5EgignVDzhU3jhHIt5iV/SrzvHnVioMY3JzPP85ATHjaiM/7hUjMfZ3zpVVNu3C1WNB283JgEPZOSdzn1v6/Jmnf9n6Aqc8pRAv99f"
+./update_docker.sh
+./upload_docker.sh
 python3 -u sagemaker_launch.py \
 --entry_point calvin_gcbc.py \
 --user kylehatch \
 --input-source s3 \
 --base-job-name bridge_data_v2 \
---config experiments/susie/calvin/configs/gcbc_train_config.py:gc_ddpm_bc_noactnorm_b2048_sagemaker \
+--config experiments/susie/calvin/configs/gcbc_train_config.py:gc_bc_noactnorm_sagemaker \
 --calvin_dataset_config experiments/susie/calvin/configs/gcbc_data_config.py:all \
---name gcbc_diffusion_noactnorm_b2048 \
+--name gcbcnam \
 --wandb_proj_name susie_gc_low_level \
 --wandb-api-key 65915e3ae3752bc3ddc4b7eef1b066067b9d1cb1 \
---instance_type ml.p4d.24xlarge
+--instance_type ml.p4d.24xlarge \
+--seed 0
 
+export AWS_ACCESS_KEY_ID="ASIARZ3C2ZCOX3OGOVW7"
+export AWS_SECRET_ACCESS_KEY="j7S4bL0ynzANExZKR1o20nNoPS45J90501b/7FtM"
+export AWS_SESSION_TOKEN="IQoJb3JpZ2luX2VjELz//////////wEaCXVzLWVhc3QtMSJHMEUCIEupxOSdnKad9V9bmIyxaYZRVJ8ES7XHUXk1VYLtgdJ9AiEAsCXmua9g6cxyNtnTM65P05jr1X45U9nktPwVFyXWlewqkgMIlf//////////ARAEGgwxMjQyMjQ0NTY4NjEiDJi0gdb8AZKcYpT/jCrmAl9O/LICdF/Aqs1PQ8F+6MWtX2KdGuiKKeAVc1u81mu1FxTYFh+HNncBZ5qYJrO3Xd4ffSW+8FQDn2hAt5NMXGAda01wJWyRLlGl28lMpEPMMbJgN4jxPZd8ccZ869Ac57ml1TRA5oQnwKUFcE/YqXNa2I773xz8gDgwOGsBxuTHkvsZG+1qpOYSoUCeP2ipkF5sIi9XaGNDNhMppo3xR8N3Q6p8bEsJykO0uRtUpRhlKnQDP29Pu8Fxfg6oCX1x9h2NtQAgn/IDs58E/+9NY8rFPB7HGlCiww4tZDOLAMD7CM/c4CQLRioNU1TBFBsKddWSwwguXPkVLM6XELcHh6ysveyRP2k8djVcvMMzDwngNAzDYSOwcOfZAre4GJCeSi4cDpy3iAc/n+xuPO6Y2HvyEuwxkfMDN25fEIDcU450fqHuUAFwF8xGNDc0ePPopV4OR/pfe2lzKekqcQC1ybe7jsZCz7ww7q60rgY6pgHsOzTE3N9fblkQiOf0+qNZegHCqm7glNFgDAGMV/ssxc+cZCGCOaMfxVs/pzy7ZS+rwg3pm02rY8I/Q4LHMRqVk9FppcpojySO69xOUIhcGofBL4GHQ7+L/IU1UjVSJkWjfYc6P+SmusDkPDaHJdf6e7eO1DN8zGB/zTB3nBZ+4cx1qowVTSmQ42pK854dTzyqf1H3b3soVYv/BOXdyQEcLl6tdTx6"
+./update_docker.sh
+./upload_docker.sh
 python3 -u sagemaker_launch.py \
 --entry_point calvin_gcbc.py \
 --user kylehatch \
 --input-source s3 \
 --base-job-name bridge_data_v2 \
---config experiments/susie/calvin/configs/gcbc_train_config.py:gc_ddpm_bc_noactnorm_b4096_sagemaker \
+--config experiments/susie/calvin/configs/gcbc_train_config.py:gc_iql5_noactnorm_sagemaker \
 --calvin_dataset_config experiments/susie/calvin/configs/gcbc_data_config.py:all \
---name gcbc_diffusion_noactnorm_b4096 \
+--name gciql5nam \
 --wandb_proj_name susie_gc_low_level \
 --wandb-api-key 65915e3ae3752bc3ddc4b7eef1b066067b9d1cb1 \
---instance_type ml.p4d.24xlarge
+--instance_type ml.p4d.24xlarge \
+--seed 0
 
 
 
 
 
+
+
+###
+python3 -u sagemaker_launch.py \
+--entry_point calvin_gcbc.py \
+--user kylehatch \
+--input-source s3 \
+--base-job-name bridge_data_v2 \
+--config experiments/susie/calvin/configs/gcbc_train_config.py:gc_bc_sagemaker \
+--calvin_dataset_config experiments/susie/calvin/configs/gcbc_data_config.py:all \
+--name gcbc \
+--wandb_proj_name susie_gc_low_level \
+--wandb-api-key 65915e3ae3752bc3ddc4b7eef1b066067b9d1cb1 \
+--seed 0 \
+--local \
+--debug 1 \
+--save_to_s3 0 
+
+
+export AWS_ACCESS_KEY_ID="ASIARZ3C2ZCOSPGKYREF"
+export AWS_SECRET_ACCESS_KEY="VgOjnCDrhni92DXKkPfDe1+30l6ER3Abpp+45A2Y"
+export AWS_SESSION_TOKEN="IQoJb3JpZ2luX2VjEDEaCXVzLWVhc3QtMSJHMEUCIEnDoRd6B4D/NE0Si5NbDV/wHNIcnooqYFnTkVdPQD/qAiEAzhnLggtVdWmFrlqbunwEqtQIwY4Ix/OiSJeC9KsGK/UqkgMI+f//////////ARAEGgwxMjQyMjQ0NTY4NjEiDHVaVEdBWLPR2K98syrmAmmtEMUTYnyMtZs1iajhhJ+YlOtAotxY6o3Z3Qs+2+FlmB+mdVMACPQ6u7uTwRHMd8fm6geYZVxfgKo/ra2OIlI7IsCYGJ8P9oWVzgARdA7VdhGG0i9QKGyd8ml3sghCHqQRi+QBJ70lCYxe7zRDRmKdjAE47EyxtrVuJGS+R9qDsSSfZ3dJt5b6orCDTnPj3Z7Rnoi0vZX7/EFCrqXNnIG1wCpLRpaKL5pYOkxe7xqApvH3hQ6u1A6GHgtT1GaO4/FMyEGPWKEeC0v4ueBevPgXdQkARD9ZFUmRievHxByKhXKynfl1EjKht8poW46RF0f2xW+JH1nRqWcKD7b1uhemdIzGvTydVtM3m+IgmGYPMWiqplX9Ld74KO3GYjkbdkTg/a1+3CxvNt62DcWKJ1owh3ZVq/QQAW3f9evSuNdxK4RHhr/aKGRXBOoZ2S/Anb0wVAwfDl0/xhRvZwbAol5GKUm3DJwwg92VrgY6pgGaoMdZbiK9K/EBiPnFvORmSwGvRqI8ij5iosq+13cG7HDgxXntmD2VyPJELgT/3waOYNbMRjhUujjOMsouOqWsvzkM80/6FFWW7kEpYK7jYpMBazPliLTtkNudGa7gD74SUkhKv3zojNpVbiag8+XYzqAziXEaMnIYU37IO3ZJVr/v1VM4mlsTpDtksgJ7laXRlDgPC7daQawSDyQHldK0ojDQGGRR"
 python3 -u sagemaker_launch.py \
 --entry_point calvin_gcbc.py \
 --user kylehatch \
@@ -409,7 +444,29 @@ python3 -u sagemaker_launch.py \
 --wandb_proj_name susie_gc_low_level \
 --wandb-api-key 65915e3ae3752bc3ddc4b7eef1b066067b9d1cb1 \
 --instance_type ml.p4d.24xlarge \
---seed 42
+--seed 2
+
+export AWS_ACCESS_KEY_ID="ASIARZ3C2ZCOSPGKYREF"
+export AWS_SECRET_ACCESS_KEY="VgOjnCDrhni92DXKkPfDe1+30l6ER3Abpp+45A2Y"
+export AWS_SESSION_TOKEN="IQoJb3JpZ2luX2VjEDEaCXVzLWVhc3QtMSJHMEUCIEnDoRd6B4D/NE0Si5NbDV/wHNIcnooqYFnTkVdPQD/qAiEAzhnLggtVdWmFrlqbunwEqtQIwY4Ix/OiSJeC9KsGK/UqkgMI+f//////////ARAEGgwxMjQyMjQ0NTY4NjEiDHVaVEdBWLPR2K98syrmAmmtEMUTYnyMtZs1iajhhJ+YlOtAotxY6o3Z3Qs+2+FlmB+mdVMACPQ6u7uTwRHMd8fm6geYZVxfgKo/ra2OIlI7IsCYGJ8P9oWVzgARdA7VdhGG0i9QKGyd8ml3sghCHqQRi+QBJ70lCYxe7zRDRmKdjAE47EyxtrVuJGS+R9qDsSSfZ3dJt5b6orCDTnPj3Z7Rnoi0vZX7/EFCrqXNnIG1wCpLRpaKL5pYOkxe7xqApvH3hQ6u1A6GHgtT1GaO4/FMyEGPWKEeC0v4ueBevPgXdQkARD9ZFUmRievHxByKhXKynfl1EjKht8poW46RF0f2xW+JH1nRqWcKD7b1uhemdIzGvTydVtM3m+IgmGYPMWiqplX9Ld74KO3GYjkbdkTg/a1+3CxvNt62DcWKJ1owh3ZVq/QQAW3f9evSuNdxK4RHhr/aKGRXBOoZ2S/Anb0wVAwfDl0/xhRvZwbAol5GKUm3DJwwg92VrgY6pgGaoMdZbiK9K/EBiPnFvORmSwGvRqI8ij5iosq+13cG7HDgxXntmD2VyPJELgT/3waOYNbMRjhUujjOMsouOqWsvzkM80/6FFWW7kEpYK7jYpMBazPliLTtkNudGa7gD74SUkhKv3zojNpVbiag8+XYzqAziXEaMnIYU37IO3ZJVr/v1VM4mlsTpDtksgJ7laXRlDgPC7daQawSDyQHldK0ojDQGGRR"
+python3 -u sagemaker_launch.py \
+--entry_point calvin_gcbc.py \
+--user kylehatch \
+--input-source s3 \
+--base-job-name bridge_data_v2 \
+--config experiments/susie/calvin/configs/gcbc_train_config.py:gc_iql5_sagemaker \
+--calvin_dataset_config experiments/susie/calvin/configs/gcbc_data_config.py:all \
+--name gciql5 \
+--wandb_proj_name susie_gc_low_level \
+--wandb-api-key 65915e3ae3752bc3ddc4b7eef1b066067b9d1cb1 \
+--instance_type ml.p4d.24xlarge \
+--seed 2
+
+
+
+
+
+
 
 python3 -u sagemaker_launch.py \
 --entry_point calvin_gcbc.py \
@@ -463,18 +520,7 @@ python3 -u sagemaker_launch.py \
 --instance_type ml.p4d.24xlarge \
 --seed 42 
 
-python3 -u sagemaker_launch.py \
---entry_point calvin_gcbc.py \
---user kylehatch \
---input-source s3 \
---base-job-name bridge_data_v2 \
---config experiments/susie/calvin/configs/gcbc_train_config.py:gc_iql5_sagemaker \
---calvin_dataset_config experiments/susie/calvin/configs/gcbc_data_config.py:all \
---name gciql5 \
---wandb_proj_name susie_gc_low_level \
---wandb-api-key 65915e3ae3752bc3ddc4b7eef1b066067b9d1cb1 \
---instance_type ml.p4d.24xlarge \
---seed 42 
+
 
 
 Wonder how much better the official diffusion policy would do than this jax version? 

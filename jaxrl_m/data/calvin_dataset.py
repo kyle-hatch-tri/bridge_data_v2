@@ -185,10 +185,10 @@ class CalvinDataset:
 
         # yields trajectories
         if self.normalize_actions:
-            print("Normalizing actions")
+            print("\n" * 5 + "=" * 30 + " Normalizing actions " + "=" * 30 + "\n" * 5)
             dataset = dataset.map(self._process_actions, num_parallel_calls=tf.data.AUTOTUNE)
         else:
-            print("Not normalizing actions")
+            print("\n" * 5 + "=" * 30 + " Not normalizing actions " + "=" * 30 + "\n" * 5)
 
         # yields trajectories
         dataset = dataset.map(self._chunk_act_obs, num_parallel_calls=tf.data.AUTOTUNE)

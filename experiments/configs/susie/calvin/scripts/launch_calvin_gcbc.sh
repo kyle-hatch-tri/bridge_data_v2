@@ -68,6 +68,7 @@ CMD="python3 -u calvin_gcbc.py \
     --log_to_wandb=0 \
     --save_to_s3=0 \
     --s3_save_uri=s3://kyle-sagemaker-training-outputs \
-    --wandb_proj_name susie_gc_low_level"
+    --wandb_proj_name susie_gc_low_level \
+    --seed=77"
 $CMD
 

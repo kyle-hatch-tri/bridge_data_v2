@@ -123,7 +123,12 @@ def main(_):
         f"{wandb_logger.config.exp_descriptor}_{wandb_logger.config.unique_identifier}",
     )
 
-    s3_sync_callback = S3SyncCallback(os.path.abspath(save_dir), FLAGS.s3_save_uri + "/" + wandb_logger.config.project + "/" + f"{wandb_logger.config.exp_descriptor}_{wandb_logger.config.unique_identifier}")
+    # s3_sync_callback = S3SyncCallback(os.path.abspath(save_dir), FLAGS.s3_save_uri + "/" + wandb_logger.config.project + "/" + f"{wandb_logger.config.exp_descriptor}_{wandb_logger.config.unique_identifier}")
+    s3_sync_callback = S3SyncCallback(os.path.abspath(save_dir), FLAGS.s3_save_uri + "/" + wandb_logger.config.project + "/" + f"{wandb_logger.config.exp_descriptor}" + "/" + f"seed_{FLAGS.config.seed}" + "/" + f"{wandb_logger.config.unique_identifier}")
+    print("s3_sync_callback.s3_uri:", s3_sync_callback.s3_uri)
+    # print("new s3 uri:", FLAGS.s3_save_uri + "/" + wandb_logger.config.project + "/" + f"{wandb_logger.config.exp_descriptor}" + "/" + f"seed_{FLAGS.config.seed}" + "/" + f"{wandb_logger.config.unique_identifier}")
+    print("FLAGS.seed:", FLAGS.seed)
+    print("FLAGS.config.seed:", FLAGS.config.seed)
 
     # load datasets
     assert type(FLAGS.calvin_dataset_config.include[0]) == list
