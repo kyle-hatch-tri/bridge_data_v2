@@ -66,56 +66,56 @@ def process_trajectory(function_data):
 
     print("Start...")
 
-    # for ep_id in trange(start_id, end_id+1): # end_id is inclusive
-    #     #print(unique_pid + ": iter " + str(ep_id-start_id) + " of " + str(end_id-start_id))
+    for ep_id in trange(start_id, end_id+1): # end_id is inclusive
+        #print(unique_pid + ": iter " + str(ep_id-start_id) + " of " + str(end_id-start_id))
 
-    #     ep_id = make_seven_characters(ep_id)
-    #     timestep_data = np.load(os.path.join(raw_dataset_path, split, "episode_" + ep_id + ".npz"))
+        ep_id = make_seven_characters(ep_id)
+        timestep_data = np.load(os.path.join(raw_dataset_path, split, "episode_" + ep_id + ".npz"))
         
-    #     rel_actions = timestep_data["rel_actions"]
-    #     traj_rel_actions.append(rel_actions)
+        rel_actions = timestep_data["rel_actions"]
+        traj_rel_actions.append(rel_actions)
 
-    #     robot_obs = timestep_data["robot_obs"]
-    #     traj_robot_obs.append(robot_obs)
+        robot_obs = timestep_data["robot_obs"]
+        traj_robot_obs.append(robot_obs)
 
-    #     rgb_static = timestep_data["rgb_static"] # not normalized, so we have to do normalization in another script
-    #     traj_rgb_static.append(rgb_static)
+        rgb_static = timestep_data["rgb_static"] # not normalized, so we have to do normalization in another script
+        traj_rgb_static.append(rgb_static)
 
 
-    # print("Converting to numpy array...")
-    # traj_rel_actions, traj_robot_obs, traj_rgb_static = np.array(traj_rel_actions, dtype=np.float32), np.array(traj_robot_obs, dtype=np.float32), np.array(traj_rgb_static, dtype=np.uint8)
-    # print("Done converting to numpy array...")
+    print("Converting to numpy array...")
+    traj_rel_actions, traj_robot_obs, traj_rgb_static = np.array(traj_rel_actions, dtype=np.float32), np.array(traj_robot_obs, dtype=np.float32), np.array(traj_rgb_static, dtype=np.uint8)
+    print("Done converting to numpy array...")
 
-    # # Determine the output path
-    # write_dir = os.path.join(tfrecord_dataset_path, split, letter, "traj" + str(ctr))
-    # if not os.path.exists(write_dir):
-    #     os.mkdir(write_dir)
+    # Determine the output path
+    write_dir = os.path.join(tfrecord_dataset_path, split, letter, "traj" + str(ctr))
+    if not os.path.exists(write_dir):
+        os.mkdir(write_dir)
 
-    # print("Splitting...")
+    print("Splitting...")
 
-    # # Split the trajectory into 1000 timestep length segments
-    # for traj_idx in trange(0, len(traj_rel_actions), 1000):
-    #     traj_rel_actions_segment = traj_rel_actions[traj_idx : min(traj_idx+1000, len(traj_rel_actions))]
-    #     traj_robot_obs_segment = traj_robot_obs[traj_idx : min(traj_idx+1000, len(traj_robot_obs))]
-    #     traj_rgb_static_segment = traj_rgb_static[traj_idx : min(traj_idx+1000, len(traj_rgb_static))]
+    # Split the trajectory into 1000 timestep length segments
+    for traj_idx in trange(0, len(traj_rel_actions), 1000):
+        traj_rel_actions_segment = traj_rel_actions[traj_idx : min(traj_idx+1000, len(traj_rel_actions))]
+        traj_robot_obs_segment = traj_robot_obs[traj_idx : min(traj_idx+1000, len(traj_robot_obs))]
+        traj_rgb_static_segment = traj_rgb_static[traj_idx : min(traj_idx+1000, len(traj_rgb_static))]
 
         
 
-        # # Write the TFRecord
-        # output_tfrecord_path = os.path.join(write_dir, str(traj_idx // 1000) + ".tfrecord") # Seems to be splitting each "episode" into segments of len 1000
-        # with tf.io.TFRecordWriter(output_tfrecord_path) as writer:
-        #     example = tf.train.Example(
-        #         features=tf.train.Features(
-        #             feature={
-        #                 "actions" : tensor_feature(traj_rel_actions_segment),
-        #                 "proprioceptive_states" : tensor_feature(traj_robot_obs_segment),
-        #                 "image_states" : tensor_feature(traj_rgb_static_segment)
-        #             }
-        #         )
-        #     )
-        #     writer.write(example.SerializeToString())
-    # print("Done")
-    # return traj_rel_actions.shape[0]
+        # Write the TFRecord
+        output_tfrecord_path = os.path.join(write_dir, str(traj_idx // 1000) + ".tfrecord") # Seems to be splitting each "episode" into segments of len 1000
+        with tf.io.TFRecordWriter(output_tfrecord_path) as writer:
+            example = tf.train.Example(
+                features=tf.train.Features(
+                    feature={
+                        "actions" : tensor_feature(traj_rel_actions_segment),
+                        "proprioceptive_states" : tensor_feature(traj_robot_obs_segment),
+                        "image_states" : tensor_feature(traj_rgb_static_segment)
+                    }
+                )
+            )
+            writer.write(example.SerializeToString())
+    print("Done")
+    return traj_rel_actions.shape[0]
     return end_id + 1 - start_id
 
 # Let's prepare the inputs to the process_trajectory function and then parallelize execution

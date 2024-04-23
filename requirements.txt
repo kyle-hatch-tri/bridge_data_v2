@@ -38,11 +38,20 @@ diffusers==0.18.2
 ml-dtypes==0.2.0
 ipdb 
 
-tensorflow[and-cuda] 
-tensorflow_datasets>=4.9.2 
-# tensorflow_probability==0.21
-# tensorflow_hub
-# tensorflow_text
+# tensorflow[and-cuda] 
+# tensorflow_datasets>=4.9.2 
+# tensorflow-hub==0.15.0
+# # tensorflow_probability==0.21
+# # tensorflow_hub
+# # tensorflow_text
+
+
+tensorflow[and-cuda]==2.13.0
+# tensorflow_datasets>=4.9.2 
+tensorflow_probability==0.21.0
+tensorflow_hub==0.15.0
+tensorflow_text==2.13.0
+
 tqdm-multiprocess==0.0.11 
 pre-commit==3.3.3
 typing_extensions

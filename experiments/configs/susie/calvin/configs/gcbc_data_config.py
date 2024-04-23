@@ -83,6 +83,7 @@ def get_config(config_string):
                         "training/A/?*/?*",
                         "training/B/?*/?*",
                         "training/C/?*/?*"
+
                     ],
                     [
                         "validation/D/?*/?*",
@@ -93,5 +94,26 @@ def get_config(config_string):
                 "action_proprio_metadata": ACTION_PROPRIO_METADATA
             }
         ),
+
+
+        "libero": ml_collections.ConfigDict(
+            {
+                "include": [
+                    [
+                        "train/?*/?*/?*.tfrecord"
+                    ],
+                    [
+                        "val/?*/?*/?*.tfrecord"
+                    ]
+                ],
+                "exclude": [],
+                "sample_weights": None,
+                "action_proprio_metadata": ACTION_PROPRIO_METADATA
+            }
+        ),
     }
+
+    print("config_string:", config_string)
+    print("possible_structures.keys():", possible_structures.keys())
+
     return possible_structures[config_string]

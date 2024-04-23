@@ -210,9 +210,272 @@ def delta_goals(traj, *, goal_delta):
     return traj_truncated
 
 
+def delta_goals_with_generated(traj, *, goal_delta, frac_generated):
+    """
+    Relabels with a uniform distribution over future states in the range [i +
+    goal_delta[0], min{traj_len, i + goal_delta[1]}). Truncates trajectories to
+    have length traj_len - goal_delta[0]. Not suitable for RL (does not add
+    terminals or rewards).
+    """
+    traj_len = tf.shape(traj["terminals"])[0]
+
+    # add the last observation (which only exists in next_observations) to get
+    # all the observations
+    all_obs = tf.nest.map_structure(
+        lambda obs, next_obs: tf.concat([obs, next_obs[-1:]], axis=0),
+        traj["observations"],
+        traj["next_observations"],
+    )
+    all_obs_len = traj_len + 1
+
+    # current obs should only come from [0, traj_len - goal_delta[0])
+    curr_idxs = tf.range(traj_len - goal_delta[0])
+
+    # select a random future index for each transition i in the range [i + goal_delta[0], min{all_obs_len, i + goal_delta[1]})
+    rand = tf.random.uniform([traj_len - goal_delta[0]])
+    low = tf.cast(curr_idxs + goal_delta[0], tf.float32)
+    high = tf.cast(tf.minimum(all_obs_len, curr_idxs + goal_delta[1]), tf.float32)
+    goal_idxs = tf.cast(rand * (high - low) + low, tf.int32) # what percentage in the range of low to high to be at 
+
+    
+    max_goal_idxs = tf.cast(high, tf.int32) # equivalent to if rand=1
+    max_goal_idxs = tf.minimum(max_goal_idxs, all_obs_len - 1)
+    max_goal_dists = max_goal_idxs - curr_idxs
+
+    # very rarely, floating point errors can cause goal_idxs to be out of bounds
+    goal_idxs = tf.minimum(goal_idxs, all_obs_len - 1)
+
+    traj_truncated = tf.nest.map_structure(
+        lambda x: tf.gather(x, curr_idxs),
+        traj,
+    )
+
+    # select goals
+    traj_truncated["goals"] = tf.nest.map_structure(
+        lambda x: tf.gather(x, goal_idxs),
+        all_obs,
+    )
+
+    traj_truncated["goal_dists"] = goal_idxs - curr_idxs
+
+    # traj_truncated["rand"] = rand
+    # traj_truncated["low"] = low
+    # traj_truncated["high"] = high
+    # traj_truncated["goal_idxs"] = goal_idxs
+
+    # TODO: add if statement so that it only does this if "generated_goals" in traj, since has to handle both lcbc and gcbc data
+
+    # if "generated_goals" in traj:
+    if True:
+        idxs_of_generated_goals = tf.random.uniform(shape=(tf.shape(traj_truncated["generated_goals"])[0],), minval=0, maxval=tf.shape(traj_truncated["generated_goals"])[1], dtype=tf.int32)
+
+        all_generated_goals = tf.nest.map_structure(
+            lambda x: tf.gather(x, idxs_of_generated_goals, axis=1, batch_dims=1),
+            traj_truncated["generated_goals"],
+        )
+
+        ### CHECK THE SHAPE of all_generated_goals
+        # Need the reshape here?
+        # all_generated_goals = tf.reshape(all_generated_goals, (tf.shape(traj["generated_goals"])[0], 1)) # 
+
+
+        traj_truncated["goals"]["original_image"] = tf.identity(traj_truncated["goals"]["image"]) ### DEBUG
+
+        traj_truncated["goals"]["generated_image"] = tf.identity(all_generated_goals) ### DEBUG
+
+        # Shuffle the indices
+        shuffled_curr_idxs = tf.random.shuffle(curr_idxs)
+        traj_truncated["shuffled_curr_idxs"] = shuffled_curr_idxs
+        # Select half of the indices
+        # Calculate the number of indices to select
+        # num_indices_to_select = tf.shape(shuffled_curr_idxs)[0] // frac_generated_denom  #* frac_generated 
+        num_indices_to_select = tf.cast(tf.cast(tf.shape(shuffled_curr_idxs)[0], tf.float32) * frac_generated, tf.int32)
+        # num_indices_to_select = int(num_indices_to_select)
+
+        # Select the first half of the shuffled indices
+        curr_idxs_with_generated_goals = shuffled_curr_idxs[:num_indices_to_select] 
+
+        selected_generated_goals = tf.gather(all_generated_goals, curr_idxs_with_generated_goals)
+
+        traj_truncated["goals"]["image"] = tf.tensor_scatter_nd_update(traj_truncated["goals"]["image"], tf.expand_dims(curr_idxs_with_generated_goals, axis=-1), selected_generated_goals)
+
+
+        
+
+        traj_truncated["orig_goal_dists"] = tf.identity(traj_truncated["goal_dists"]) ### DEBUG
+        traj_truncated["max_goal_dists"] = max_goal_dists ### DEBUG
+        # selected_highs = tf.cast(tf.gather(high, curr_idxs_with_generated_goals), tf.int32)
+        # traj_truncated["goal_dists"] = tf.tensor_scatter_nd_update(traj_truncated["goal_dists"], tf.expand_dims(curr_idxs_with_generated_goals, axis=-1), selected_highs) # CHECK equivalent to min(cur_idx + goal_delta[1], all_obs_len) 
+        selected_max_goal_dists = tf.cast(tf.gather(max_goal_dists, curr_idxs_with_generated_goals), tf.int32)
+        traj_truncated["goal_dists"] = tf.tensor_scatter_nd_update(traj_truncated["goal_dists"], tf.expand_dims(curr_idxs_with_generated_goals, axis=-1), selected_max_goal_dists) # CHECK equivalent to min(cur_idx + goal_delta[1], all_obs_len) 
+
+        
+
+        # traj_truncated["curr_idxs_with_generated_goals"] = tf.expand_dims(curr_idxs_with_generated_goals, axis=-1)
+        traj_truncated["curr_idxs"] = curr_idxs
+
+
+        traj_truncated["uses_generated_goal"] = tf.zeros_like(curr_idxs)
+        traj_truncated["uses_generated_goal"] = tf.tensor_scatter_nd_update(traj_truncated["uses_generated_goal"], tf.expand_dims(curr_idxs_with_generated_goals, axis=-1), tf.ones_like(curr_idxs_with_generated_goals))
+    
+        traj_truncated["idxs_of_generated_goals"] = idxs_of_generated_goals
+
+        traj_truncated["goals"]["unaugmented_image"] = tf.identity(traj_truncated["goals"]["image"])  ### DEBUG
+    
+
+    # Use gcbc_and_lcbc_data_config.py 
+    # Change the thing in sagemaker so it doesn't do "{}/goal_conditioned"
+        # instead does "{}/goal_and_language_conditioned"
+
+
+    
+
+    return traj_truncated
+
+
+def delta_goals_with_generated_encode_decode(traj, *, goal_delta, frac_generated, frac_encode_decode, frac_noised_encode_decode, zero_goal):
+    """
+    Relabels with a uniform distribution over future states in the range [i +
+    goal_delta[0], min{traj_len, i + goal_delta[1]}). Truncates trajectories to
+    have length traj_len - goal_delta[0]. Not suitable for RL (does not add
+    terminals or rewards).
+    """
+    traj_len = tf.shape(traj["terminals"])[0]
+
+    # add the last observation (which only exists in next_observations) to get
+    # all the observations
+    all_obs = tf.nest.map_structure(
+        lambda obs, next_obs: tf.concat([obs, next_obs[-1:]], axis=0),
+        traj["observations"],
+        traj["next_observations"],
+    )
+    all_obs_len = traj_len + 1
+
+    # current obs should only come from [0, traj_len - goal_delta[0])
+    curr_idxs = tf.range(traj_len - goal_delta[0])
+
+    # select a random future index for each transition i in the range [i + goal_delta[0], min{all_obs_len, i + goal_delta[1]})
+    rand = tf.random.uniform([traj_len - goal_delta[0]])
+    low = tf.cast(curr_idxs + goal_delta[0], tf.float32)
+    high = tf.cast(tf.minimum(all_obs_len, curr_idxs + goal_delta[1]), tf.float32)
+    goal_idxs = tf.cast(rand * (high - low) + low, tf.int32) # what percentage in the range of low to high to be at 
+
+    
+    max_goal_idxs = tf.cast(high, tf.int32) # equivalent to if rand=1
+    max_goal_idxs = tf.minimum(max_goal_idxs, all_obs_len - 1)
+    max_goal_dists = max_goal_idxs - curr_idxs
+
+    # very rarely, floating point errors can cause goal_idxs to be out of bounds
+    goal_idxs = tf.minimum(goal_idxs, all_obs_len - 1)
+
+    traj_truncated = tf.nest.map_structure(
+        lambda x: tf.gather(x, curr_idxs),
+        traj,
+    )
+
+    # select goals
+    traj_truncated["goals"] = tf.nest.map_structure(
+        lambda x: tf.gather(x, goal_idxs),
+        all_obs,
+    )
+
+    traj_truncated["goal_dists"] = goal_idxs - curr_idxs
+
+
+    # TODO: add if statement so that it only does this if "generated_goals" in traj, since has to handle both lcbc and gcbc data
+    # if "generated_goals" in traj:
+    if True:
+
+        ### Choose which generated goal, which encode_decode goal, and which noised encode_edcode goal to use 
+        idxs_of_generated_goals = tf.random.uniform(shape=(tf.shape(traj_truncated["generated_goals"])[0],), minval=0, maxval=tf.shape(traj_truncated["generated_goals"])[1], dtype=tf.int32)
+        all_generated_goals = tf.nest.map_structure(
+            lambda x: tf.gather(x, idxs_of_generated_goals, axis=1, batch_dims=1),
+            traj_truncated["generated_goals"],
+        )
+
+        if zero_goal:
+            all_generated_goals = tf.zeros_like(all_generated_goals) 
+
+        idxs_of_encode_decode_goals = tf.random.uniform(shape=(tf.shape(traj_truncated["goals"]["encode_decode_image"])[0],), minval=0, maxval=tf.shape(traj_truncated["goals"]["encode_decode_image"])[1], dtype=tf.int32)
+        all_encode_decode_goals = tf.nest.map_structure(
+            lambda x: tf.gather(x, idxs_of_encode_decode_goals, axis=1, batch_dims=1),
+            traj_truncated["goals"]["encode_decode_image"],
+        )
+
+        idxs_of_noised_encode_decode_goals = tf.random.uniform(shape=(tf.shape(traj_truncated["goals"]["noised_encode_decode_image"])[0],), minval=0, maxval=tf.shape(traj_truncated["goals"]["noised_encode_decode_image"])[1], dtype=tf.int32)
+        all_noised_encode_decode_goals = tf.nest.map_structure(
+            lambda x: tf.gather(x, idxs_of_noised_encode_decode_goals, axis=1, batch_dims=1),
+            traj_truncated["goals"]["noised_encode_decode_image"],
+        )
+
+
+        # # DEBUG: save the original goal image and the generated goal image and the encode_decode_goal_image and the nosied encode_decode_goal_image
+        # traj_truncated["goals"]["real_image"] = tf.identity(traj_truncated["goals"]["image"]) ### DEBUG
+        # traj_truncated["goals"]["generated_image"] = tf.identity(all_generated_goals) ### DEBUG
+        # traj_truncated["goals"]["encode_decode_image"] = tf.identity(all_encode_decode_goals) ### DEBUG
+        # traj_truncated["goals"]["noised_encode_decode_image"] = tf.identity(all_noised_encode_decode_goals) ### DEBUG
+        # traj_truncated["unaugmented_image_obs"] = tf.identity(traj_truncated["observations"]["image"])  ### DEBUG
+
+        ### Choose which transitions have generated goals, encode_decode goals, and noised encode decode goals
+        # Shuffle the indices
+        shuffled_curr_idxs = tf.random.shuffle(curr_idxs)
+        traj_truncated["shuffled_curr_idxs"] = shuffled_curr_idxs
+        # Calculate the number of indices to select
+        num_idx_generated_to_select = tf.cast(tf.cast(tf.shape(shuffled_curr_idxs)[0], tf.float32) * frac_generated, tf.int32)
+        num_idx_enc_dec_to_select = tf.cast(tf.cast(tf.shape(shuffled_curr_idxs)[0], tf.float32) * frac_encode_decode, tf.int32)
+        num_idx_noised_enc_dec_to_select = tf.cast(tf.cast(tf.shape(shuffled_curr_idxs)[0], tf.float32) * frac_noised_encode_decode, tf.int32)
+
+        curr_idxs_with_generated_goals = shuffled_curr_idxs[:num_idx_generated_to_select] 
+        curr_idxs_with_encode_decode_goals = shuffled_curr_idxs[num_idx_generated_to_select:num_idx_generated_to_select + num_idx_enc_dec_to_select] 
+        curr_idxs_with_noised_encode_decode_goals = shuffled_curr_idxs[num_idx_generated_to_select + num_idx_enc_dec_to_select:num_idx_generated_to_select + num_idx_enc_dec_to_select + num_idx_noised_enc_dec_to_select] 
+
+        # For the selected indices, set the goal image to be the encode decode goal image or the noised encode decode goal image
+        
+
+        # Gather the generated/encode_decode/noised encode_decode goals that match the idxs of the transitions chosen to have these kinds of goals
+        selected_generated_goals = tf.gather(all_generated_goals, curr_idxs_with_generated_goals)
+        selected_encode_decode_goals = tf.gather(all_encode_decode_goals, curr_idxs_with_encode_decode_goals)
+        selected_noised_encode_decode_goals = tf.gather(all_noised_encode_decode_goals, curr_idxs_with_noised_encode_decode_goals)
+
+        # For the selected indices, set the goal image to be generated goal image, encode decode, or noised encode decode
+        traj_truncated["goals"]["image"] = tf.tensor_scatter_nd_update(traj_truncated["goals"]["image"], tf.expand_dims(curr_idxs_with_generated_goals, axis=-1), selected_generated_goals)
+        traj_truncated["goals"]["image"] = tf.tensor_scatter_nd_update(traj_truncated["goals"]["image"], tf.expand_dims(curr_idxs_with_encode_decode_goals, axis=-1), selected_encode_decode_goals)
+        traj_truncated["goals"]["image"] = tf.tensor_scatter_nd_update(traj_truncated["goals"]["image"], tf.expand_dims(curr_idxs_with_noised_encode_decode_goals, axis=-1), selected_noised_encode_decode_goals)
+
+        ### Update the goal_dists
+        # traj_truncated["orig_goal_dists"] = tf.identity(traj_truncated["goal_dists"]) ### DEBUG
+        # traj_truncated["max_goal_dists"] = max_goal_dists ### DEBUG
+        selected_max_goal_dists = tf.cast(tf.gather(max_goal_dists, curr_idxs_with_generated_goals), tf.int32)
+        traj_truncated["goal_dists"] = tf.tensor_scatter_nd_update(traj_truncated["goal_dists"], tf.expand_dims(curr_idxs_with_generated_goals, axis=-1), selected_max_goal_dists) # CHECK equivalent to min(cur_idx + goal_delta[1], all_obs_len) 
+
+
+        ### DEBUG
+        # traj_truncated["curr_idxs"] = curr_idxs ### DEBUG
+
+        traj_truncated["uses_generated_goal"] = tf.zeros_like(curr_idxs) ### DEBUG
+        traj_truncated["uses_generated_goal"] = tf.tensor_scatter_nd_update(traj_truncated["uses_generated_goal"], tf.expand_dims(curr_idxs_with_generated_goals, axis=-1), tf.ones_like(curr_idxs_with_generated_goals)) 
+
+        traj_truncated["uses_encode_decode_goal"] = tf.zeros_like(curr_idxs) ### DEBUG
+        traj_truncated["uses_encode_decode_goal"] = tf.tensor_scatter_nd_update(traj_truncated["uses_encode_decode_goal"], tf.expand_dims(curr_idxs_with_encode_decode_goals, axis=-1), tf.ones_like(curr_idxs_with_encode_decode_goals)) 
+
+        traj_truncated["uses_noised_encode_decode_goal"] = tf.zeros_like(curr_idxs) ### DEBUG
+        traj_truncated["uses_noised_encode_decode_goal"] = tf.tensor_scatter_nd_update(traj_truncated["uses_noised_encode_decode_goal"], tf.expand_dims(curr_idxs_with_noised_encode_decode_goals, axis=-1), tf.ones_like(curr_idxs_with_noised_encode_decode_goals)) 
+
+
+        # traj_truncated["idxs_of_generated_goals"] = idxs_of_generated_goals ### DEBUG
+        # traj_truncated["idxs_of_encode_decode_goals"] = idxs_of_encode_decode_goals ### DEBUG
+        # traj_truncated["idxs_of_noised_encode_decode_goals"] = idxs_of_noised_encode_decode_goals ### DEBUG
+        # traj_truncated["goals"]["unaugmented_image"] = tf.identity(traj_truncated["goals"]["image"])  ### DEBUG)
+        
+
+
+    return traj_truncated
+
 GOAL_RELABELING_FUNCTIONS = {
     "uniform": uniform,
     "last_state_upweighted": last_state_upweighted,
     "geometric": geometric,
     "delta_goals": delta_goals,
+    "delta_goals_with_generated": delta_goals_with_generated,
+    "delta_goals_with_generated_encode_decode": delta_goals_with_generated_encode_decode,
 }

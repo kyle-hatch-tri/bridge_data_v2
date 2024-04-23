@@ -8,13 +8,16 @@
 
 import numpy as np
 import tensorflow as tf 
-from tqdm import tqdm 
+from tqdm import tqdm, trange
 import os
 from multiprocessing import Pool
 
+from jax_diffusion_model import DiffusionModel
+
 ########## Dataset paths ###########
-raw_dataset_path = "/home/kylehatch/Desktop/hidql/data/calvin_data/task_ABCD_D"
-tfrecord_dataset_path = "/home/kylehatch/Desktop/hidql/data/calvin_data_processed"
+# raw_dataset_path = "/home/kylehatch/Desktop/hidql/data/calvin_data/task_ABCD_D"
+raw_dataset_path = "/home/kylehatch/Desktop/hidql/calvin/dataset/task_ABCD_D"
+tfrecord_dataset_path = "/home/kylehatch/Desktop/hidql/data/calvin_data_processed/language_conditioned_with_generated"
 
 
 print("raw_dataset_path:", raw_dataset_path)
@@ -66,8 +69,10 @@ def process_trajectory(function_data):
 
     traj_rgb_generated_goals = []
 
+    diffusion_model = DiffusionModel(50, num_samples=16)
+    
 
-    for ep_id in range(start_id, end_id+1): # end_id is inclusive
+    for ep_id in trange(start_id, end_id+1): # end_id is inclusive
         #print(unique_pid + ": iter " + str(ep_id-start_id) + " of " + str(end_id-start_id))
 
         ep_id = make_seven_characters(ep_id)
@@ -82,8 +87,13 @@ def process_trajectory(function_data):
         rgb_static = timestep_data["rgb_static"] # not normalized, so we have to do normalization in another script
         traj_rgb_static.append(rgb_static)
 
+        
+        goal_images = diffusion_model.generate(lang_ann, rgb_static)
+        traj_rgb_generated_goals.append(goal_images)
+        import ipdb; ipdb.set_trace()
     
     traj_rel_actions, traj_robot_obs, traj_rgb_static = np.array(traj_rel_actions, dtype=np.float32), np.array(traj_robot_obs, dtype=np.float32), np.array(traj_rgb_static, dtype=np.uint8)
+    traj_rgb_generated_goals = np.array(traj_rgb_generated_goals, dtype=np.uint8)
 
     # Determine the output path
     write_dir = os.path.join(tfrecord_dataset_path, split, letter)
@@ -97,7 +107,8 @@ def process_trajectory(function_data):
                     "actions" : tensor_feature(traj_rel_actions),
                     "proprioceptive_states" : tensor_feature(traj_robot_obs),
                     "image_states" : tensor_feature(traj_rgb_static),
-                    "language_annotation" : string_to_feature(lang_ann)
+                    "language_annotation" : string_to_feature(lang_ann),
+                    "generated_goals": tensor_feature(traj_rgb_generated_goals),
                 }
             )
         )
@@ -154,7 +165,7 @@ traj_lens = []
 print("Before process")
 print("len(function_inputs):", len(function_inputs))
 # Finally loop through and process everything
-for function_input in tqdm(function_inputs):
+for function_input in tqdm(function_inputs, disable=True):
     traj_len = process_trajectory(function_input)
     traj_lens.append(traj_len)
 print("After process")
@@ -164,3 +175,11 @@ print("np.mean(traj_lens):", np.mean(traj_lens))
 print("len(traj_lens):", len(traj_lens))
 
 # You can also parallelize execution with a process pool, see end of sister script
+
+
+"""
+export PYTHONPATH="/home/kylehatch/Desktop/hidql/bridge_data_v2/external/susie:$PYTHONPATH"
+export DIFFUSION_MODEL_CHECKPOINT=/home/kylehatch/Desktop/hidql/susie-calvin-checkpoints/susie_test/test1_400smthlib_2024.02.21_06.44.06/40000/params_ema
+python3 -u experiments/configs/susie/calvin/dataset_conversion_scripts/language_conditioned_calvin_generated_goals.py
+
+"""

@@ -51,7 +51,7 @@ def main(_):
     assert FLAGS.config.batch_size % num_devices == 0
 
     # we shard the leading dimension (batch dimension) accross all devices evenly
-    sharding = jax.sharding.PositionalSharding(devices)
+    sharding = jax.sharding.PositionalSharding(devices) ###%%%###
     shard_fn = partial(shard_batch, sharding=sharding)
 
     # prevent tensorflow from using GPUs
@@ -109,14 +109,16 @@ def main(_):
         **FLAGS.config.dataset_kwargs,
     )
 
-    if FLAGS.config.text_processor is None:
+    if FLAGS.config.text_processor is None: ###$$$###
         text_processor = None
     else:
         text_processor = text_processors[FLAGS.config.text_processor](
             **FLAGS.config.text_processor_kwargs
         )
 
-    def process_text(batch):
+
+
+    def process_text(batch): ###$$$###
         if text_processor is None:
             batch["goals"].pop("language")
         else:
@@ -125,7 +127,7 @@ def main(_):
                 [s for s in batch["goals"]["language"]]
             )
         return batch
-    train_data_iter = map(shard_fn, map(process_text, train_data.tf_dataset.as_numpy_iterator()))
+    train_data_iter = map(shard_fn, map(process_text, train_data.tf_dataset.as_numpy_iterator())) ###$$$###
 
     example_batch = next(train_data_iter)
     logging.info(f"Batch size: {example_batch['observations']['image'].shape[0]}")
@@ -170,6 +172,7 @@ def main(_):
             logging.info("Evaluating...")
             timer.tick("val")
             metrics = []
+            ###$$$###
             val_data_iter = map(shard_fn, map(process_text, val_data.tf_dataset.as_numpy_iterator()))
             for _, batch in zip(range(FLAGS.config.num_val_batches), val_data_iter):
                 rng, val_rng = jax.random.split(rng)

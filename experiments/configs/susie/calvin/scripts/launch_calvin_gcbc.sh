@@ -58,17 +58,48 @@ cd "/home/kylehatch/Desktop/hidql/bridge_data_v2"
 
 export WANDB_API_KEY=""
 
+# cd /home/kylehatch/Desktop/hidql/bridge_data_v2
+# NAME="gcbc_diffusion_policy_noactnorm"
+# CMD="python3 -u calvin_gcbc.py \
+#     --config experiments/configs/susie/calvin/configs/gcbc_train_config.py:gc_ddpm_bc_noactnorm \
+#     --calvin_dataset_config experiments/configs/susie/calvin/configs/gcbc_data_config.py:all \
+#     --name $NAME \
+#     --debug=1 \
+#     --log_to_wandb=1 \
+#     --save_to_s3=1 \
+#     --s3_save_uri=s3://kyle-sagemaker-training-outputs \
+#     --wandb_proj_name susie_gc_low_level \
+#     --seed=77"
+# $CMD
+
+# --config experiments/configs/susie/calvin/configs/gcbc_train_config.py:calvin_gcdiffusion_noactnorm-auggoaldiff-sagemaker-b1024 \
+
 cd /home/kylehatch/Desktop/hidql/bridge_data_v2
-NAME="gcbc_diffusion_policy_noactnorm"
-CMD="python3 -u calvin_gcbc.py \
-    --config experiments/susie/calvin/configs/gcbc_train_config.py:gc_ddpm_bc_noactnorm \
-    --calvin_dataset_config experiments/susie/calvin/configs/gcbc_data_config.py:all \
-    --name $NAME \
-    --debug=1 \
-    --log_to_wandb=0 \
-    --save_to_s3=0 \
-    --s3_save_uri=s3://kyle-sagemaker-training-outputs \
-    --wandb_proj_name susie_gc_low_level \
-    --seed=77"
-$CMD
+python3 -u calvin_gcbc.py \
+--calvin_dataset_config experiments/configs/susie/calvin/configs/gcbc_data_config.py:all \
+--config experiments/configs/susie/calvin/configs/gcbc_train_config.py:calvin_gciql_hparams5-noactnorm-auggoaldiff \
+--algo=gcdiffusion \
+--description=default \
+--debug=1 \
+--log_to_wandb=1 \
+--save_to_s3=1 \
+--s3_save_uri=s3://kyle-sagemaker-training-outputs \
+--wandb_proj_name susie_low_level \
+--seed=25
+
+
+
+
+cd /home/kylehatch/Desktop/hidql/bridge_data_v2
+python3 -u calvin_gcbc.py \
+--calvin_dataset_config experiments/configs/susie/calvin/configs/gcbc_data_config.py:libero \
+--config experiments/configs/susie/calvin/configs/gcbc_train_config.py:liberosplit1_gciql_hparams5-noactnorm-auggoaldiff \
+--algo=gcdiffusion \
+--description=default \
+--debug=1 \
+--log_to_wandb=0 \
+--save_to_s3=0 \
+--s3_save_uri=s3://kyle-sagemaker-training-outputs \
+--wandb_proj_name susie_low_level \
+--seed=25
 

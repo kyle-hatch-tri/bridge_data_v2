@@ -60,18 +60,22 @@ class WandBLogger(object):
         else:
             mode = "online"
 
+
+
         self.run = wandb.init(
             config=self._variant,
             project=self.config.project,
             entity=self.config.entity,
             dir=wandb_output_dir,
-            id=self.config.experiment_id,
+            # id=self.config.experiment_id, ###===### ###---###
             save_code=True,
             mode=mode,
 
             group=self.config.exp_descriptor, ###===###
             name=f"seed_{self.config.seed}", ###---###
         )
+
+        
 
         flag_dict = {k: getattr(flags.FLAGS, k) for k in flags.FLAGS}
         for k in flag_dict:

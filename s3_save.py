@@ -84,6 +84,7 @@ def sync_s3_checkpoints_to_local(
 
 
 
+
 class S3SyncCallback:
     def __init__(self, local_path, s3_uri):#, sync_interval=5):
         """
@@ -95,6 +96,9 @@ class S3SyncCallback:
         self.local_path = local_path
         self.s3_uri = s3_uri
         # self.sync_lock = threading.Lock()
+
+    def upload_base_savedir(self):
+        sync_local_checkpoints_to_s3(self.local_path, self.s3_uri)
 
 
     def on_train_epoch_end(self, step):
